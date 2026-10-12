@@ -1,0 +1,17 @@
+# Claude Code local settings (may contain API keys)
+.claude/settings.local.json
+
+# Secrets
+.env
+*.key
+
+# Java / build output (CloudAnalyst is Java-based)
+*.class
+bin/
+build/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
