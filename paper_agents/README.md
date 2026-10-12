@@ -1,6 +1,7 @@
 # 7-agent research paper pipeline
 
-`python pipeline.py "your topic" --max-iterations 3 --out output` (needs `OPENAI_API_KEY`; optional `PAPER_MODEL`,
+`python pipeline.py "your topic" --max-iterations 3 --out output` (needs `OPENROUTER_API_KEY`, or `OPENAI_API_KEY` for OpenAI directly; optional `PAPER_MODEL` such as
+`anthropic/claude-sonnet-4.5` or `openai/gpt-4o` (default),
 `SEMANTIC_SCHOLAR_API_KEY`; `pandoc` for Word, `pdflatex`/`tectonic` for PDF).
 
 1. Supervisor (start): turns the topic into a brief, research questions and search queries.

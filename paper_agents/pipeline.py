@@ -10,7 +10,8 @@ Agent 7  Final Reviewer    (end + loop)    scores the paper; Agent 1 and 7 loop 
 
 Output: LaTeX (+ .bib), Word (.docx via pandoc) and PDF (pdflatex/tectonic if installed, else pandoc).
 
-Usage:  export OPENAI_API_KEY=...   (optional: PAPER_MODEL, SEMANTIC_SCHOLAR_API_KEY)
+Usage:  export OPENROUTER_API_KEY=...   (or OPENAI_API_KEY; optional: PAPER_MODEL e.g. anthropic/claude-sonnet-4.5,
+        SEMANTIC_SCHOLAR_API_KEY)
         python pipeline.py "your topic" [--max-iterations 3] [--out output]
 """
 import argparse
@@ -44,7 +45,14 @@ def get_llm():
     global _llm
     if _llm is None:
         from langchain_openai import ChatOpenAI
-        _llm = ChatOpenAI(model=os.environ.get("PAPER_MODEL", "gpt-4o"), temperature=0.2)
+        key = os.environ.get("OPENROUTER_API_KEY") or os.environ.get("OPENAI_API_KEY")
+        if not key:
+            sys.exit("Set OPENROUTER_API_KEY (or OPENAI_API_KEY for OpenAI directly).")
+        if os.environ.get("OPENROUTER_API_KEY"):
+            _llm = ChatOpenAI(model=os.environ.get("PAPER_MODEL", "openai/gpt-4o"), temperature=0.2,
+                              api_key=key, base_url="https://openrouter.ai/api/v1")
+        else:
+            _llm = ChatOpenAI(model=os.environ.get("PAPER_MODEL", "gpt-4o"), temperature=0.2, api_key=key)
     return _llm
 
 
@@ -53,7 +61,7 @@ def ask(prompt: str) -> str:
 
 
 def ask_struct(schema, prompt: str):
-    return get_llm().with_structured_output(schema).invoke([HumanMessage(content=prompt)])
+    return get_llm().with_structured_output(schema, method="function_calling").invoke([HumanMessage(content=prompt)])
 
 
 # --------------------------------------------------------------- data schemas
