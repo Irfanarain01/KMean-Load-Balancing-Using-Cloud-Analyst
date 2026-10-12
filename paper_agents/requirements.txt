@@ -1,0 +1,10 @@
+langgraph
+langchain-core
+langchain-openai
+pydantic>=2
+requests
+numpy
+scipy
+pandas
+matplotlib
+scikit-learn
