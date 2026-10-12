@@ -45,12 +45,24 @@ def get_llm():
     global _llm
     if _llm is None:
         from langchain_openai import ChatOpenAI
-        key = os.environ.get("OPENROUTER_API_KEY") or os.environ.get("OPENAI_API_KEY")
+        key = (os.environ.get("OPENROUTER_API_KEY") or os.environ.get("OPENAI_API_KEY") or "").strip().strip("\"'")
         if not key:
-            sys.exit("Set OPENROUTER_API_KEY (or OPENAI_API_KEY for OpenAI directly).")
+            sys.exit("No API key found. In THIS terminal run:  $env:OPENROUTER_API_KEY=\"sk-or-...\"  (PowerShell)")
         if os.environ.get("OPENROUTER_API_KEY"):
+            print(f"Using OpenRouter key {key[:8]}...{key[-4:]} (length {len(key)})")
+            if not key.startswith("sk-or-") or "your" in key.lower() or "..." in key:
+                sys.exit("OPENROUTER_API_KEY does not look like a real OpenRouter key (should start with sk-or-v1-). "
+                         "Paste your actual key from https://openrouter.ai/keys")
+            try:
+                r = requests.get("https://openrouter.ai/api/v1/auth/key",
+                                 headers={"Authorization": f"Bearer {key}"}, timeout=15)
+                if r.status_code != 200:
+                    sys.exit(f"OpenRouter rejected the key (HTTP {r.status_code}): {r.text[:200]}")
+            except requests.RequestException as ex:
+                print(f"  (could not pre-check key: {ex})")
             _llm = ChatOpenAI(model=os.environ.get("PAPER_MODEL", "openai/gpt-4o"), temperature=0.2,
-                              api_key=key, base_url="https://openrouter.ai/api/v1")
+                              api_key=key, base_url="https://openrouter.ai/api/v1",
+                              default_headers={"Authorization": f"Bearer {key}"})
         else:
             _llm = ChatOpenAI(model=os.environ.get("PAPER_MODEL", "gpt-4o"), temperature=0.2, api_key=key)
     return _llm
