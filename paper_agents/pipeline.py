@@ -38,6 +38,7 @@ STAGES = ["literature", "gaps", "methodology", "simulation", "writer"]
 
 
 # ----------------------------------------------------------------- LLM access
+MAX_TOKENS = int(os.environ.get("PAPER_MAX_TOKENS", "8000"))   # per call; keeps OpenRouter credit holds small
 _llm = None
 
 
@@ -60,11 +61,11 @@ def get_llm():
                     sys.exit(f"OpenRouter rejected the key (HTTP {r.status_code}): {r.text[:200]}")
             except requests.RequestException as ex:
                 print(f"  (could not pre-check key: {ex})")
-            _llm = ChatOpenAI(model=os.environ.get("PAPER_MODEL", "openai/gpt-4o"), temperature=0.2,
+            _llm = ChatOpenAI(model=os.environ.get("PAPER_MODEL", "openai/gpt-4o"), temperature=0.2, max_tokens=MAX_TOKENS,
                               api_key=key, base_url="https://openrouter.ai/api/v1",
                               default_headers={"Authorization": f"Bearer {key}"})
         else:
-            _llm = ChatOpenAI(model=os.environ.get("PAPER_MODEL", "gpt-4o"), temperature=0.2, api_key=key)
+            _llm = ChatOpenAI(model=os.environ.get("PAPER_MODEL", "gpt-4o"), temperature=0.2, max_tokens=MAX_TOKENS, api_key=key)
     return _llm
 
 
